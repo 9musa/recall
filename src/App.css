@@ -36,7 +36,7 @@ body {
   margin-left: 0%;
   margin-right: 2%;
   padding: 0.75rem 1rem;
-  background-color: #789DA6;
+  background-color: #a3b18a;
   color: #fff;
   border: none;
   border-left: 0px;
@@ -50,7 +50,7 @@ body {
   pointer-events: auto;
 }
 .btn:hover {
-  background-color: #6C8F98;
+  background-color: #87996e;
 }
 #topicBox {
 align-items: center;
