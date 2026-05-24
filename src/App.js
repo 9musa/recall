@@ -7,11 +7,11 @@ import { useMemo, useState } from 'react';
 function App() {
   //initialises state piece "query" to hold search input, and its function setQuery
   const [query, setQuery] = useState("");
-  //updates query
+  //updates query, takes a value as a parameter, and sets it to query
   const handleQueryChange = (value) => {
     setQuery(value);
   }
-  const [topics, setTopics] = useState([{ title: "Python", content: "Emp" }, { title: "Archery", content: "pt" }, { title: "Polynomials", content: "ty" }]);
+  const [topics, setTopics] = useState([{ title: "Python", content: "Python is really nice." }, { title: "Archery", content: "Archery is fun." }, { title: "Polynomials", content: "Mathematics." }]);
   //holds the selected topic object
   const [selTopic, setSelTopic] = useState(null)
   //filtered array containing matching items, strips each ##
@@ -70,7 +70,9 @@ function App() {
       {selTopic ? (
         <div id="detailView">
           <div id="backHeader">
-            <button id="backBtn" className="btn" onClick={handleGoBack}>Back</button>
+            <button id="backBtn" className="btn" onClick={handleGoBack}><svg viewBox="0 0 24 24" fill="currentColor">
+    <path d="M20 11H7.83l5.59-5.59L12 4l-8 8 8 8 1.41-1.41L7.83 13H20v-2z"/>
+  </svg></button>
             <h2 id="topicTitle">{selTopic.title}</h2>
           </div>
           <div id="contentBox">
