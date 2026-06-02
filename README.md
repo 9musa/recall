@@ -25,20 +25,3 @@ A lightning-fast, zero-friction React application designed to capture niche insi
 
 ---
 
-## Getting Started
-
-Follow these steps to get the project running locally on your machine.
-
-### Prerequisites
-
-Make sure you have [Node.js](https://nodejs.org/) installed on your computer.
-
-### Installation
-1. Clone this repository to your local machine:
-   ```bash
-   git clone https://github.com/9mus/recall.git
-   ```
-2. Navigate into the project directory:
-   ```bash
-   cd recall
-   ```
