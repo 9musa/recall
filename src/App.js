@@ -7,12 +7,13 @@ import { useMemo, useState } from 'react';
 function App() {
   //initialises state piece "query" to hold search input, and its function setQuery
   const [query, setQuery] = useState("");
-  //updates query, takes a value as a parameter, and sets it to query
+  //takes a value as a parameter, and updates it
   const handleQueryChange = (value) => {
     setQuery(value);
   }
+  //holds all topic objects, initialised with a template
   const [topics, setTopics] = useState([{ title: "Python", content: "Python is really nice." }, { title: "Archery", content: "Archery is fun." }, { title: "Polynomials", content: "Mathematics." }]);
-  //holds the selected topic object
+  //holds the selected topic object, initialised to null
   const [selTopic, setSelTopic] = useState(null)
   //filtered array containing matching items, strips each ##
   const filteredTopics = topics.filter(topic => {
@@ -23,39 +24,51 @@ function App() {
     if (!query.trim()) {
       return false
     }
+    //returns the topics that match
     return topics.some(topic => topic.title.toLowerCase().includes(query.toLowerCase()))
   }, [query, topics])
-  //returns true if any array element satisfies the condition
+  //takes title as parameter, and adds it to the end of topics array
   const handleAddTopic = (newTitle) => {
     const newTopicObj = {title: newTitle, content: ""}
     setTopics(prevTopic => [...prevTopic, newTopicObj]);
   }
+  const handleRemoveTopic = () => {
+    if (!selTopic) return
+    setTopics(prevTopic => prevTopic.filter(topic => topic.title !== selTopic.title))
+    setSelTopic(null)
+    setQuery("")
+  }
+  //click event handler, sets selected topic, needs onClick attribute
   const handleTopicClick = (topic) => {
     console.log(`Topic clicked: ${topic.title}`);
     setSelTopic(topic)
   }
+  //if selected topic exists, it passes the selected topic to a save function, and resets selected topic back to none
   const handleGoBack = () => {
     if (selTopic) {
       saveTopicChanges(selTopic)
     }
     setSelTopic(null)
+    setQuery("")
   }
+  //event object as parameter, updates selected topic by copying its old properties, but replaces content with the updated value
   const handleContentChange = (e) => {
     setSelTopic({
       ...selTopic, content: e.target.value,
     });
   };
+  //takes topic object as parameter
   const saveTopicChanges = (topicToSave) => {
-    // 1. Find the index of the topic being edited
+    //find the index of the topic being edited
     const index = topics.findIndex(topic => topic.title === topicToSave.title);
     
-    // 2. Create a copy of the topics array
+    //create a copy of the topics array
     const updatedTopics = [...topics];
     
-    // 3. Replace the old topic object with the new, edited selTopic
+    //replace the old topic object with the new, edited selTopic
     updatedTopics[index] = topicToSave;
     
-    // 4. Update the main topics state
+    //update the main topics state
     setTopics(updatedTopics);
 };
   //TROUBLESHOOTING
@@ -74,6 +87,9 @@ function App() {
     <path d="M20 11H7.83l5.59-5.59L12 4l-8 8 8 8 1.41-1.41L7.83 13H20v-2z"/>
   </svg></button>
             <h2 id="topicTitle">{selTopic.title}</h2>
+            <button id="delBtn" className="btn" onClick={handleRemoveTopic}>
+              <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-trash-2"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path><line x1="10" y1="11" x2="10" y2="17"></line><line x1="14" y1="11" x2="14" y2="17"></line></svg>
+            </button>
           </div>
           <div id="contentBox">
             <textarea 
