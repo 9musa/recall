@@ -1,22 +1,70 @@
 # Recall
 
+This project was built using Create React App and extended into a full-stack application using Supabase for authentication and database functionality.
+
 > **Live Demo:** [https://recall-ecru.vercel.app/](https://recall-ecru.vercel.app/)
 
-A lightning-fast, zero-friction React application designed to capture niche insights, cool facts, and random inspirations the exact second you discover them—perfect for when you're scrolling through Reels, Shorts, or TikToks and don't want to lose that thought.
+Recall is a minimal, search-first note-taking application designed for capturing thoughts, insights, and niche information the moment they appear—especially in situations where ideas are easily lost while browsing or consuming content.
 
-## The Problem & The Solution
+## The Idea
 
-**The Problem:** You’re doomscrolling and see a video about a highly specific topic (e.g., *"How ancient Romans made concrete"* or *"A secret productivity shortcut"*). You think, *"Wow, I need to remember that,"* but opening a heavy note-taking app takes too long, requires sorting into folders, and breaks your flow. By the time the app loads, the thought is gone.
+Recall was built around a simple problem: when you come across something interesting while browsing or learning online, it’s easy to lose it before you actually write it down. Traditional note-taking tools often feel too slow for these moments, especially when they require navigating folders or structured workflows that interrupt your flow.
 
-**The Solution:** **Recall**. This app lets you instantly type a quick Heading and drop a note. As you watch more or do a quick rabbit-hole search, you can immediately append and add more details to that exact note without any clunky navigation.
+Recall reduces that friction by using a single search-based interface for both finding and creating notes. You type once, and either open an existing note immediately or create a new one in the same place if it doesn’t exist.
+
+Notes are treated as living entries that can be revisited and expanded over time, especially when you fall into the rabbit hole and keep digging for more information.
+
+---
+
+## Core Interaction Model
+
+### **Search** is the interface
+* Typing in the search bar immediately queries existing notes
+* If no match is found, a creation button is dynamically revealed
+* Notes are edited in a focused view and saved automatically on exit
+
 
 ---
 
 ## Features
 
-* **Instant Creation:** One-click/one-keypress heading and content creation. No folders, no categories, no friction.
-* **Living Notes:** Easily append new information to an existing note as you uncover more details about the topic.
-* **Streamlined UI:** A clean, minimal interface optimized for rapid input and quick reading.
+* **Search-first Design** Notes are accessed and created through a single input field
+* **Instant Creation:** New notes are created without any navigation or menus
+* **Living Notes:** Easy to append notes
+* **Streamlined UI:** Minimal interface optimized for rapid input and quick reading
+
+---
+
+## Project Structure
+
+## Project Structure
+
+src/
+├── components/
+│   ├── Bar.jsx            # Main search + create interaction controller
+│   ├── Button.jsx         # Reusable UI button component
+│   ├── Login.js           # Authentication/login screen
+│   ├── EMPTY.py           # (unused / testing file)
+│
+├── App.js                 # Core app state, routing logic, Supabase integration
+├── supabaseClient.js      # Supabase client initialization + config
+├── index.js               # React entry point
+├── index.css              # Global styles
+├── App.css                # App-specific styles
+├── logo.svg               # Static asset
+├── reportWebVitals.js     # CRA default performance tracking
+├── setupTests.js          # Testing setup (CRA default)
+├── App.test.js            # Default test file (unused unless expanded)
+│
+public/
+├── index.html             # App shell
+├── assets...              # (if any)
+│
+root/
+├── .env                   # Environment variables (Supabase keys etc.)
+├── package.json
+├── package-lock.json
+├── README.md
 
 ---
 
@@ -24,7 +72,7 @@ A lightning-fast, zero-friction React application designed to capture niche insi
 
 * **Frontend Library:** React.js
 * **Styling:** CSS3
-* **Deplotment & Hosting** Vercel
+* **Deployment & Hosting** Vercel
 * **Authentication Engine** Supabase Auth
 * **Database Platform** Supabase
 
