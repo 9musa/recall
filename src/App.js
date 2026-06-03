@@ -1,10 +1,23 @@
 import logo from './logo.svg';
 import './App.css';
-import Button from "./components/Button"
-import Bar from "./components/Bar"
-import { useMemo, useState } from 'react';
+import Login from './components/Login';
+import Button from "./components/Button";
+import Bar from "./components/Bar";
+import { useMemo, useState, useEffect } from 'react';
+import { supabase } from './supabaseClient';
 
 function App() {
+  const [user, setUser] = useState(null)
+  useEffect(() => {
+    supabase.auth.getSession().then(({ data : { session }}) => {
+      setUser(session?.user ?? null)
+    })
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
+    console.log('onAuthStateChange', event, session)
+    setUser(session?.user ?? null)
+  })
+  return () => subscription.unsubscribe()
+  }, [])
   //initialises state piece "query" to hold search input, and its function setQuery
   const [query, setQuery] = useState("");
   //takes a value as a parameter, and updates it
@@ -31,6 +44,8 @@ function App() {
   const handleAddTopic = (newTitle) => {
     const newTopicObj = {title: newTitle, content: ""}
     setTopics(prevTopic => [...prevTopic, newTopicObj]);
+    setQuery("")
+    setSelTopic(newTitle)
   }
   const handleRemoveTopic = () => {
     if (!selTopic) return
@@ -77,58 +92,61 @@ function App() {
 
 
   //html functionality
-  return (
-    <div className="App">
-      <h1 className='txt'>Recall</h1>
-      {selTopic ? (
-        <div id="detailView">
-          <div id="backHeader">
-            <button id="backBtn" className="btn" onClick={handleGoBack}><svg viewBox="0 0 24 24" fill="currentColor">
-    <path d="M20 11H7.83l5.59-5.59L12 4l-8 8 8 8 1.41-1.41L7.83 13H20v-2z"/>
-  </svg></button>
-            <h2 id="topicTitle">{selTopic.title}</h2>
-            <button id="delBtn" className="btn" onClick={handleRemoveTopic}>
-              <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-trash-2"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path><line x1="10" y1="11" x2="10" y2="17"></line><line x1="14" y1="11" x2="14" y2="17"></line></svg>
-            </button>
+  if (user) {
+    return (
+      <div className="App">
+        <h1 className='txt'>Recall</h1>
+        {selTopic ? (
+          <div id="detailView">
+            <div id="backHeader">
+              <button id="backBtn" className="btn" onClick={handleGoBack}><svg viewBox="0 0 24 24" fill="currentColor">
+      <path d="M20 11H7.83l5.59-5.59L12 4l-8 8 8 8 1.41-1.41L7.83 13H20v-2z"/>
+    </svg></button>
+              <h2 id="topicTitle">{selTopic.title}</h2>
+              <button id="delBtn" className="btn" onClick={handleRemoveTopic}>
+                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-trash-2"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path><line x1="10" y1="11" x2="10" y2="17"></line><line x1="14" y1="11" x2="14" y2="17"></line></svg>
+              </button>
+            </div>
+            <div id="contentBox">
+              <textarea 
+                  value={selTopic.content} 
+                  onChange={handleContentChange}
+                  placeholder="Start typing your notes here..."
+                  // Styling to ensure the textarea fits the contentBox design
+                  style={{ 
+                      width: '100%', 
+                      minHeight: '300px', 
+                      border: 'none', 
+                      padding: '0', 
+                      margin: '0', 
+                      resize: 'none', 
+                      backgroundColor: 'inherit', /* Inherit the contentBox background */
+                      fontFamily: 'inherit',
+                  }}
+                />
+            </div>
           </div>
-          <div id="contentBox">
-            <textarea 
-                value={selTopic.content} 
-                onChange={handleContentChange}
-                placeholder="Start typing your notes here..."
-                // Styling to ensure the textarea fits the contentBox design
-                style={{ 
-                    width: '100%', 
-                    minHeight: '300px', 
-                    border: 'none', 
-                    padding: '0', 
-                    margin: '0', 
-                    resize: 'none', 
-                    backgroundColor: 'inherit', /* Inherit the contentBox background */
-                    fontFamily: 'inherit',
-                }}
-              />
+        ) : (
+        <>
+          <div id="main">
+            <Bar query={query} onQueryChange={handleQueryChange} />
+            {query.trim() !== '' && (!doesQueryMatch ? (
+              <Button onAdd={() => handleAddTopic(query)}/>
+            ) : null)}
           </div>
-        </div>
-      ) : (
-      <>
-        <div id="main">
-          <Bar query={query} onQueryChange={handleQueryChange} />
-          {query.trim() !== '' && (!doesQueryMatch ? (
-            <Button onAdd={() => handleAddTopic(query)}/>
-          ) : null)}
-        </div>
-        <div id="topicBox">
-          <ul id="topicList">
-            {filteredTopics.map((topic, index) => (
-              <li className='topicItem' key={index} onClick={() => handleTopicClick(topic)}>{topic.title}</li>
-            ))}
-          </ul>
-        </div>
-      </>
-      )}
-    </div>
-  );
+          <div id="topicBox">
+            <ul id="topicList">
+              {filteredTopics.map((topic, index) => (
+                <li className='topicItem' key={index} onClick={() => handleTopicClick(topic)}>{topic.title}</li>
+              ))}
+            </ul>
+          </div>
+        </>
+        )}
+      </div>
+    );
+    }
+    return <Login />
 }
 
 export default App;
