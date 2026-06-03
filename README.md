@@ -1,5 +1,7 @@
 # Recall
 
+> **Live Demo:** [https://recall-ecru.vercel.app/](https://recall-ecru.vercel.app/)
+
 A lightning-fast, zero-friction React application designed to capture niche insights, cool facts, and random inspirations the exact second you discover them—perfect for when you're scrolling through Reels, Shorts, or TikToks and don't want to lose that thought.
 
 ## The Problem & The Solution
@@ -22,6 +24,7 @@ A lightning-fast, zero-friction React application designed to capture niche insi
 
 * **Frontend Library:** React.js
 * **Styling:** CSS3
+* **Deplotment & Hosting** Vercel
 * **Authentication Engine** Supabase Auth
 * **Database Platform** Supabase
 
