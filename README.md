@@ -39,32 +39,27 @@ Notes are treated as living entries that can be revisited and expanded over time
 
 ## Project Structure
 
-src/
-├── components/
-│   ├── Bar.jsx            # Main search + create interaction controller
-│   ├── Button.jsx         # Reusable UI button component
-│   ├── Login.js           # Authentication/login screen
-│   ├── EMPTY.py           # (unused / testing file)
+```text
+Recall/
+├── public/
+│   └── index.html          # HTML app shell
 │
-├── App.js                 # Core app state, routing logic, Supabase integration
-├── supabaseClient.js      # Supabase client initialization + config
-├── index.js               # React entry point
-├── index.css              # Global styles
-├── App.css                # App-specific styles
-├── logo.svg               # Static asset
-├── reportWebVitals.js     # CRA default performance tracking
-├── setupTests.js          # Testing setup (CRA default)
-├── App.test.js            # Default test file (unused unless expanded)
+├── src/
+│   ├── components/
+│   │   ├── Bar.jsx         # Main search + create interaction controller
+│   │   ├── Button.jsx      # Reusable UI button component
+│   │   └── Login.js        # Authentication/login screen
+│   │
+│   ├── App.js              # Core app state, routing logic, and Supabase integration
+│   ├── supabaseClient.js   # Supabase client initialization + configuration
+│   ├── index.js            # React application entry point
+│   ├── index.css           # Global layout and utility styles
+│   └── App.css             # App-specific view styling
 │
-public/
-├── index.html             # App shell
-├── assets...              # (if any)
-│
-root/
-├── .env                   # Environment variables (Supabase keys etc.)
-├── package.json
-├── package-lock.json
-├── README.md
+├── .env                    # Environment variables (Local Supabase keys - gitignored)
+├── package.json            # Project dependencies and build scripts
+└── README.md               # Documentation and project overview
+\_```
 
 ---
 
