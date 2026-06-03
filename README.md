@@ -37,8 +37,6 @@ Notes are treated as living entries that can be revisited and expanded over time
 
 ## Project Structure
 
-## Project Structure
-
 ```text
 Recall/
 ├── public/
@@ -59,7 +57,7 @@ Recall/
 ├── .env                    # Environment variables (Local Supabase keys - gitignored)
 ├── package.json            # Project dependencies and build scripts
 └── README.md               # Documentation and project overview
-\_```
+```
 
 ---
 
