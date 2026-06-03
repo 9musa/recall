@@ -1,5 +1,3 @@
-import { useState } from "react";
-
 function Bar({ query, onQueryChange }) {
     const handleChange = (event) => {
         onQueryChange(event.target.value);
