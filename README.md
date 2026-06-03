@@ -22,6 +22,8 @@ A lightning-fast, zero-friction React application designed to capture niche insi
 
 * **Frontend Library:** React.js
 * **Styling:** CSS3
+* **Authentication Engine** Supabase Auth
+* **Database Platform** Supabase
 
 ---
 

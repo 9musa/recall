@@ -18,14 +18,35 @@ function App() {
   })
   return () => subscription.unsubscribe()
   }, [])
+  //holds all topic objects, initialised with a template
+  const [topics, setTopics] = useState([]);
+  //data downloader
+  useEffect(() => {
+    if (!user) {
+    setTopics([])
+    return
+  }
+  const fetchUserTopics = async () => {
+    console.log("Fetching live notes for user: ", user.id)
+    const { data, error } = await supabase
+    .from("topics")
+    .select("*")
+    .eq("user_id", user.id)
+    if (error) {
+      console.log("Error loading notes from Supabase: ", error.message)
+    } else if (data) {
+      console.log("Loaded topics from cloud: ", data)
+      setTopics(data)
+    }
+  }
+  fetchUserTopics()
+  }, [user])
   //initialises state piece "query" to hold search input, and its function setQuery
   const [query, setQuery] = useState("");
   //takes a value as a parameter, and updates it
   const handleQueryChange = (value) => {
     setQuery(value);
   }
-  //holds all topic objects, initialised with a template
-  const [topics, setTopics] = useState([{ title: "Python", content: "Python is really nice." }, { title: "Archery", content: "Archery is fun." }, { title: "Polynomials", content: "Mathematics." }]);
   //holds the selected topic object, initialised to null
   const [selTopic, setSelTopic] = useState(null)
   //filtered array containing matching items, strips each ##
@@ -41,14 +62,36 @@ function App() {
     return topics.some(topic => topic.title.toLowerCase().includes(query.toLowerCase()))
   }, [query, topics])
   //takes title as parameter, and adds it to the end of topics array
-  const handleAddTopic = (newTitle) => {
-    const newTopicObj = {title: newTitle, content: ""}
-    setTopics(prevTopic => [...prevTopic, newTopicObj]);
+  const handleAddTopic = async (newTitle) => {
+    if (!user) {
+      alert("You must be logged in to save notes!")
+      return
+    }
+    const newRow = {title: newTitle, content: "", user_id: user.id}
+    const { data, error } = await supabase
+    .from('topics')
+    .insert([newRow])
+    .select()
+    .single()
+    if (error) {
+      console.error("Error saving note to cloud: ", error.message)
+      alert("Failed to save note.")
+    } else {
+    setTopics(prevTopic => [...prevTopic, data]);
     setQuery("")
-    setSelTopic(newTitle)
+    setSelTopic(data)
+    }
   }
-  const handleRemoveTopic = () => {
-    if (!selTopic) return
+  const handleRemoveTopic = async () => {
+    if (!selTopic || !selTopic.id) return
+    const {error} = await supabase
+    .from("topics")
+    .delete()
+    .eq("id", selTopic.id)
+    if (error) {
+      console.log("Error deleting from Supabase: ", error.message)
+      return
+    }
     setTopics(prevTopic => prevTopic.filter(topic => topic.title !== selTopic.title))
     setSelTopic(null)
     setQuery("")
@@ -73,18 +116,27 @@ function App() {
     });
   };
   //takes topic object as parameter
-  const saveTopicChanges = (topicToSave) => {
+  const saveTopicChanges = async (topicToSave) => {
+    if (!topicToSave || !topicToSave.id) return
     //find the index of the topic being edited
-    const index = topics.findIndex(topic => topic.title === topicToSave.title);
-    
-    //create a copy of the topics array
-    const updatedTopics = [...topics];
-    
-    //replace the old topic object with the new, edited selTopic
-    updatedTopics[index] = topicToSave;
-    
-    //update the main topics state
-    setTopics(updatedTopics);
+    const index = topics.findIndex(topic => topic.id === topicToSave.id);
+    if (index !== -1) {
+      const updatedTopics = [...topics]
+      updatedTopics[index] = topicToSave
+      setTopics(updatedTopics)
+    }
+    console.log(`Saving "${ topicToSave.title }" to the cloud...`)
+    const { error } = await supabase
+    .from("topics")
+    .update({
+      content: topicToSave.content
+    })
+    .eq("id", topicToSave.id)
+    if (error) {
+      console.error("Error backing up to Supabase: ", error.message)
+    } else {
+      console.log("Changes successfully backed up to Supabase!")
+    }
 };
   //TROUBLESHOOTING
   //console.log(topics);
