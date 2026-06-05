@@ -51,10 +51,28 @@ body {
   background-color: #fffef9;
   font-family: 'Inter', sans-serif;
   box-sizing: border-box;
+  min-width: 0;
+}
+form {
+  display: flex;
+  flex-direction: column;
+  max-width: 400px;
+  margin: 0 auto;
+  gap: 16px; /* Adds space between all fields automatically */
+}
+.input {
+  margin: 1%;
+  background-color: #fffef9;
+  border: 1px solid #ddd;
+  border-radius: 16px;
+  padding: 1rem;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.03);
+  font-family: inherit;
 }
 .btn {
   width: 25%;
-  margin-left: 0%;
+  max-width: 360px;
+  margin-left: 2%;
   margin-right: 2%;
   padding: 0.75rem 1rem;
   background-color: #a3b18a;
