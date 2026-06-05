@@ -61,6 +61,40 @@ function App() {
     //returns the topics that match
     return topics.some(topic => topic.title.toLowerCase().includes(query.toLowerCase()))
   }, [query, topics])
+  const handleUpdateTopicTitle = async (topicId, updatedTitle) => {
+    if (!user) return
+    const { data, error } = await supabase
+      .from("topics")
+      .update({title: updatedTitle})
+      .eq("id", topicId)
+      .select()
+      .single()
+    if (error) {
+      console.log("Error updating topic title in cloud: ", error.message)
+      alert("Failed to update topic title.")
+      return
+    }
+    setTopics(prevTopics => prevTopics.map(topic => topic.id === topicId ? data : topic))
+    setSelTopic(data)
+  }
+  const [editTitle, setEditTitle] = useState(selTopic?.title || "")
+  useEffect(() => {
+    setEditTitle(selTopic?.title || "")
+  }, [selTopic?.title])
+  const handleTitleBlur = () => {
+    if (!selTopic) return
+    if (editTitle.trim() !== '' && editTitle !== selTopic.title) {
+      const updatedTopicObj = {
+        ...selTopic,
+        title: editTitle
+      }
+      setTopics(prevTopics => prevTopics.map(topic => topic.id === selTopic.id ? updatedTopicObj : topic))
+      setSelTopic(updatedTopicObj)
+      saveTopicChanges(updatedTopicObj)
+    } else {
+      setEditTitle(selTopic.title)
+    }
+  }
   //takes title as parameter, and adds it to the end of topics array
   const handleAddTopic = async (newTitle) => {
     if (!user) {
@@ -103,9 +137,9 @@ function App() {
   }
   //if selected topic exists, it passes the selected topic to a save function, and resets selected topic back to none
   const handleGoBack = () => {
-    if (selTopic) {
+    /* if (selTopic) {
       saveTopicChanges(selTopic)
-    }
+    } */
     setSelTopic(null)
     setQuery("")
   }
@@ -129,7 +163,8 @@ function App() {
     const { error } = await supabase
     .from("topics")
     .update({
-      content: topicToSave.content
+      content: topicToSave.content,
+      title: topicToSave.title
     })
     .eq("id", topicToSave.id)
     if (error) {
@@ -137,7 +172,7 @@ function App() {
     } else {
       console.log("Changes successfully backed up to Supabase!")
     }
-};
+}
   //TROUBLESHOOTING
   //console.log(topics);
   //topics.forEach((t, i) => console.log(i, typeof t, t));
@@ -151,10 +186,20 @@ function App() {
         {selTopic ? (
           <div id="detailView">
             <div id="backHeader">
-              <button id="backBtn" className="btn" onClick={handleGoBack}><svg viewBox="0 0 24 24" fill="currentColor">
+              <button id="backBtn" className="btn" onClick={handleGoBack}><svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor">
       <path d="M20 11H7.83l5.59-5.59L12 4l-8 8 8 8 1.41-1.41L7.83 13H20v-2z"/>
     </svg></button>
-              <h2 id="topicTitle">{selTopic.title}</h2>
+              <input 
+                  id="topicTitle"
+                  className="input"
+                  type="text"
+                  value={editTitle}
+                  onChange={(e) => setEditTitle(e.target.value)}
+                  onBlur={handleTitleBlur}
+                  onKeyDown={(e) => e.key === 'Enter' && e.target.blur()} // Saves when pressing Enter
+                  placeholder="Topic Title"
+                  maxLength={25}
+                />
               <button id="delBtn" className="btn" onClick={handleRemoveTopic}>
                 <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-trash-2"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path><line x1="10" y1="11" x2="10" y2="17"></line><line x1="14" y1="11" x2="14" y2="17"></line></svg>
               </button>
@@ -182,9 +227,7 @@ function App() {
         <>
           <div id="main">
             <Bar query={query} onQueryChange={handleQueryChange} />
-            {query.trim() !== '' && (!doesQueryMatch ? (
-              <Button onAdd={() => handleAddTopic(query)}/>
-            ) : null)}
+            <Button isActive={query.trim() !== "" && !doesQueryMatch} onAdd={() => handleAddTopic(query)} />
           </div>
           <div id="topicBox">
             <ul id="topicList">

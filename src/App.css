@@ -17,24 +17,15 @@ body {
 }
 #backHeader {
   display: flex;
-  align-items: center;         /* Aligns everything vertically straight across */
-  justify-content: space-between; /* Pushes backBtn left, title center, delBtn right */
+  align-items: center;
+  justify-content: center;
   width: 100%;
   box-sizing: border-box;
-  padding: 10px 20px;          /* Gives a nice clean breathing room from the edges */
-  position: relative;          /* Ensures everything aligns inside this container */
+  padding: 15px 20px;
+  position: relative;
 }
 #contentBox textarea:focus {
   outline: none;
-}
-#topicTitle {
-  color: #2F2F2F;
-  font-family: 'Inter', sans-serif;
-  align-self: center;
-  font-size: 2rem;
-  margin-left: auto;
-  margin-right: auto;
-  width: fit-content;
 }
 #main {
   display: flex;
@@ -58,7 +49,7 @@ form {
   flex-direction: column;
   max-width: 400px;
   margin: 0 auto;
-  gap: 16px; /* Adds space between all fields automatically */
+  gap: 16px;
 }
 .input {
   margin: 1%;
@@ -69,11 +60,27 @@ form {
   box-shadow: 0 2px 4px rgba(0,0,0,0.03);
   font-family: inherit;
 }
+#topicTitle {
+  font-size: 1.2rem;
+  font-weight: 600;
+  letter-spacing: 0px;
+  width: calc(100% - 120px);
+  max-width: 25ch;
+  margin-left: auto;
+  margin-right: auto;
+}
 .btn {
-  width: 25%;
-  max-width: 360px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  flex-basis: 25%;
+  flex-shrink: 0;
+  /* max-width: 360px; */
   margin-left: 2%;
   margin-right: 2%;
+  box-sizing: border-box;
+  align-self: center;
   padding: 0.75rem 1rem;
   background-color: #a3b18a;
   color: #fff;
@@ -92,19 +99,25 @@ form {
   background-color: #87996e;
 }
 #delBtn{
+  flex-basis: 50px;
   margin-left: 2%;
+  margin-right: 2%;
+  padding-left: 0;
+  padding-right: 0;
   width: 50px;
   background-color: #c26a6a;
-  display: flex;
   justify-content: center;
 }
 #delBtn.btn:hover{
   background-color: #a84f4f;
 }
 #backBtn{
+  flex-basis: 50px;
   margin-left: 2%;
+  margin-right: 2%;
+  padding-left: 0;
+  padding-right: 0;
   width: 50px;
-  display: flex;
   justify-content: center;
 }
 #topicBox {
