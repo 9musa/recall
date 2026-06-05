@@ -61,22 +61,6 @@ function App() {
     //returns the topics that match
     return topics.some(topic => topic.title.toLowerCase().includes(query.toLowerCase()))
   }, [query, topics])
-  const handleUpdateTopicTitle = async (topicId, updatedTitle) => {
-    if (!user) return
-    const { data, error } = await supabase
-      .from("topics")
-      .update({title: updatedTitle})
-      .eq("id", topicId)
-      .select()
-      .single()
-    if (error) {
-      console.log("Error updating topic title in cloud: ", error.message)
-      alert("Failed to update topic title.")
-      return
-    }
-    setTopics(prevTopics => prevTopics.map(topic => topic.id === topicId ? data : topic))
-    setSelTopic(data)
-  }
   const [editTitle, setEditTitle] = useState(selTopic?.title || "")
   useEffect(() => {
     setEditTitle(selTopic?.title || "")
