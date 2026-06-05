@@ -11,14 +11,14 @@ export default function Login() {
         setError("")
         setLoading(true)
         //attempt sign in
-        const { data: signInData, error: signInError } = await supabase.auth.signInWithPassword({
+        const { error: signInError } = await supabase.auth.signInWithPassword({
             email: email,
             password: pass,
         })
         if (signInError) {
             if (signInError.message.toLowerCase().includes("invalid login credentials")) {
                 console.log("Account not found. Attempting to sign up instead")
-                const { data: signUpData, error: signUpError } = await supabase.auth.signUp({
+                const { error: signUpError } = await supabase.auth.signUp({
                     email: email,
                     password: pass,
                 })
@@ -53,6 +53,7 @@ export default function Login() {
             <input className="input" type="email" value={email} onChange={(e) => setEmail(e.target.value)} placeholder="email" required/>
             <input className="input" type="password" value={pass} onChange={(e) => setPass(e.target.value)} placeholder="password" required/>
             <button className="btn" style={{ width: '100%' }} type="submit" disabled={loading}>{loading ? "Connecting..." : "Continue"}</button>
+            {error && <p>{error}</p>}
         </form>
     )
 }
