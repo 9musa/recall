@@ -49,7 +49,7 @@ export default function Login() {
     }
     return(
         <form onSubmit={handleContinue}>
-            <h1 style={ { textAlign: "center" } }>Welcome to Recall</h1>
+            <h1 style={ { fontFamily: "GreatVibes", textAlign: "center" } }>Welcome to Recall</h1>
             <input className="input" type="email" value={email} onChange={(e) => setEmail(e.target.value)} placeholder="email" required/>
             <input className="input" type="password" value={pass} onChange={(e) => setPass(e.target.value)} placeholder="password" required/>
             <button className="btn" style={{ width: '100%' }} type="submit" disabled={loading}>{loading ? "Connecting..." : "Continue"}</button>

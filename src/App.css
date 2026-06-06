@@ -1,14 +1,21 @@
+@font-face {
+  font-family: 'GreatVibes';
+  src: url('assets/fonts/GreatVibes-Regular.ttf') format('truetype');
+  font-weight: normal;
+  font-style: normal;
+  font-display: swap;
+}
 body {
-  background-color: #faf0e6;
+  background-color: #fae3e3;
   font-family: 'Inter', sans-serif;
-  color: #3b3b3b;
+  color: #2B1213;
   margin: 0;
   padding: 2rem;
   flex-direction: column;
   align-items: center;
 }
 .txt {
-  color: #2F2F2F;
+  color: #2B1213;
   font-family: 'Inter', sans-serif;
   align-self: center;
   margin-left: 2%;
@@ -21,7 +28,7 @@ body {
   justify-content: center;
   width: 100%;
   box-sizing: border-box;
-  padding: 15px 20px;
+  padding: 5px 5px;
   position: relative;
 }
 #contentBox textarea:focus {
@@ -44,6 +51,9 @@ body {
   box-sizing: border-box;
   min-width: 0;
 }
+#Bar:focus {
+  outline: none;
+}
 form {
   display: flex;
   flex-direction: column;
@@ -59,6 +69,9 @@ form {
   padding: 1rem;
   box-shadow: 0 2px 4px rgba(0,0,0,0.03);
   font-family: inherit;
+}
+.input:focus {
+  outline: none;
 }
 #topicTitle {
   font-size: 1.2rem;
@@ -82,7 +95,7 @@ form {
   box-sizing: border-box;
   align-self: center;
   padding: 0.75rem 1rem;
-  background-color: #a3b18a;
+  background-color: #c98b8b;
   color: #fff;
   border: none;
   border-left: 0px;
@@ -96,7 +109,7 @@ form {
   pointer-events: auto;
 }
 .btn:hover {
-  background-color: #87996e;
+  background-color: #B37171;
 }
 #delBtn{
   flex-basis: 50px;
@@ -105,11 +118,11 @@ form {
   padding-left: 0;
   padding-right: 0;
   width: 50px;
-  background-color: #c26a6a;
+  background-color: #5C2526;
   justify-content: center;
 }
 #delBtn.btn:hover{
-  background-color: #a84f4f;
+  background-color: #7A3233;
 }
 #backBtn{
   flex-basis: 50px;

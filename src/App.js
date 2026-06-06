@@ -121,9 +121,8 @@ function App() {
   }
   //if selected topic exists, it passes the selected topic to a save function, and resets selected topic back to none
   const handleGoBack = () => {
-    /* if (selTopic) {
-      saveTopicChanges(selTopic)
-    } */
+    if (selTopic) {
+      saveTopicChanges(selTopic) }
     setSelTopic(null)
     setQuery("")
   }
@@ -166,11 +165,11 @@ function App() {
   if (user) {
     return (
       <div className="App">
-        <h1 className='txt'>Recall</h1>
+        <h1 className='txt' style={ { fontFamily:"GreatVibes", fontSize: "5rem", fontWeight: "bold", textAlign: "center" } }><b>Recall</b></h1>
         {selTopic ? (
           <div id="detailView">
             <div id="backHeader">
-              <button id="backBtn" className="btn" onClick={handleGoBack}><svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor">
+              <button id="backBtn" className="btn" onClick={handleGoBack}><svg width="24" height="24" viewBox="0 0 24 24" fill="#5C2526">
       <path d="M20 11H7.83l5.59-5.59L12 4l-8 8 8 8 1.41-1.41L7.83 13H20v-2z"/>
     </svg></button>
               <input 
@@ -185,7 +184,7 @@ function App() {
                   maxLength={25}
                 />
               <button id="delBtn" className="btn" onClick={handleRemoveTopic}>
-                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-trash-2"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path><line x1="10" y1="11" x2="10" y2="17"></line><line x1="14" y1="11" x2="14" y2="17"></line></svg>
+                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="feather feather-trash-2"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path><line x1="10" y1="11" x2="10" y2="17"></line><line x1="14" y1="11" x2="14" y2="17"></line></svg>
               </button>
             </div>
             <div id="contentBox">
@@ -195,14 +194,16 @@ function App() {
                   placeholder="Start typing your notes here..."
                   // Styling to ensure the textarea fits the contentBox design
                   style={{ 
-                      width: '100%', 
+                      width: '100%',
                       minHeight: '300px', 
                       border: 'none', 
                       padding: '0', 
                       margin: '0', 
                       resize: 'none', 
                       backgroundColor: 'inherit', /* Inherit the contentBox background */
+                      fontSize: "1rem",
                       fontFamily: 'inherit',
+                      lineHeight: "1.5"
                   }}
                 />
             </div>
