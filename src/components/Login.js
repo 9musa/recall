@@ -1,14 +1,15 @@
 import React, { useState } from 'react';
 import { supabase } from '../supabaseClient';
 
-export default function Login() {
+export default function Login( {error, setError, setSuccess, clearNotifications} ) {
     const [email, setEmail] = useState("")
     const [pass, setPass] = useState("")
-    const [error, setError] = useState("")
+    /* const [error, setError] = useState("")
+    const [success, setSuccess] = useState("") */
     const [loading, setLoading] = useState(false)
     const handleContinue = async (e) => {
         e.preventDefault()
-        setError("")
+        clearNotifications()
         setLoading(true)
         //attempt sign in
         const { error: signInError } = await supabase.auth.signInWithPassword({
@@ -25,26 +26,23 @@ export default function Login() {
                 if (signUpError) {
                     if (signUpError.message.toLowerCase().includes("user already registered")) {
                         setError("Incorrect password for this account.")
-                        alert("Sign in error: Incorrect password for this account.")
                     } else {
                         setError(signUpError.message)
-                        alert(`Sign up error: ${signUpError.message}`)
                     }
                     setLoading(false)
                     return
                 }
                 console.log("Sign up successful")
-                alert("Account created successfully")
+                setSuccess("Account created! Start typing on the search box to make notes")
                 setLoading(false)
                 return
             }
             setError(signInError.message)
-            alert(`Sign in error: ${signInError.message}`)
             setLoading(false)
             return
         }
         console.log("Sign in successful")
-        alert("Signed in")
+        setSuccess("Welcome back! Fetching your notes...")
         setLoading(false)
     }
     return(
@@ -53,7 +51,7 @@ export default function Login() {
             <input className="input" type="email" value={email} onChange={(e) => setEmail(e.target.value)} placeholder="email" required/>
             <input className="input" type="password" value={pass} onChange={(e) => setPass(e.target.value)} placeholder="password" required/>
             <button className="btn" style={{ width: '100%' }} type="submit" disabled={loading}>{loading ? "Connecting..." : "Continue"}</button>
-            {error && <p>{error}</p>}
+            {error && <p className='txt' style={ {fontSize:"0.75rem"} }>{error}</p>}
         </form>
     )
 }

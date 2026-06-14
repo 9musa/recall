@@ -7,7 +7,23 @@ import { useMemo, useState, useEffect } from 'react';
 import { supabase } from './supabaseClient';
 
 function App() {
+  //authentication methods
+  const [error, setError] = useState("")
+  const [success, setSuccess] = useState("")
   const [user, setUser] = useState(null)
+  const clearNotifications = () => {
+    setError("")
+    setSuccess("")
+  }
+  useEffect(() => {
+    if (!error && !success) return
+    const timer = setTimeout(() => {
+      setError("")
+      setSuccess("")
+    }, 2500)
+    return () => clearTimeout(timer)
+  }, [error, success])
+
   useEffect(() => {
     supabase.auth.getSession().then(({ data : { session }}) => {
       setUser(session?.user ?? null)
@@ -68,6 +84,13 @@ function App() {
   const handleTitleBlur = () => {
     if (!selTopic) return
     if (editTitle.trim() !== '' && editTitle !== selTopic.title) {
+      const isDuplicate = topics.some(
+        topic => topic.title.toLowerCase() === editTitle.trim().toLowerCase() && topic.id !== selTopic.id
+      )
+      if (isDuplicate) {
+        setEditTitle(selTopic.title)
+        return
+      }
       const updatedTopicObj = {
         ...selTopic,
         title: editTitle
@@ -166,6 +189,7 @@ function App() {
     return (
       <div className="App">
         <h1 className='txt' style={ { fontFamily:"GreatVibes", fontSize: "5rem", fontWeight: "bold", textAlign: "center" } }><b>Recall</b></h1>
+        {success && <p className='txt' style={ {fontFamily:"Inter, sans-serif"}, {fontSize:"0.75rem"}, {textAlign:"center"}, {fontSize:"1rem"} }>{success}</p>}
         {selTopic ? (
           <div id="detailView">
             <div id="backHeader">
@@ -192,15 +216,15 @@ function App() {
                   value={selTopic.content} 
                   onChange={handleContentChange}
                   placeholder="Start typing your notes here..."
-                  // Styling to ensure the textarea fits the contentBox design
+                  // Styling to ensure the text area fits the contentBox design
                   style={{ 
                       width: '100%',
-                      minHeight: '300px', 
+                      minHeight: '500px', 
                       border: 'none', 
                       padding: '0', 
                       margin: '0', 
                       resize: 'none', 
-                      backgroundColor: 'inherit', /* Inherit the contentBox background */
+                      backgroundColor: 'inherit',
                       fontSize: "1rem",
                       fontFamily: 'inherit',
                       lineHeight: "1.5"
@@ -226,7 +250,14 @@ function App() {
       </div>
     );
     }
-    return <Login />
+    return (
+      <Login
+        error={error}
+        setError={setError}
+        setSuccess={setSuccess}
+        clearNotifications={clearNotifications}
+        />
+    )
 }
 
 export default App;
