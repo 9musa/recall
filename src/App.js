@@ -189,7 +189,7 @@ function App() {
     return (
       <div className="App">
         <h1 className='txt' style={ { fontFamily:"GreatVibes", fontSize: "5rem", fontWeight: "bold", textAlign: "center" } }><b>Recall</b></h1>
-        {success && <p className='txt' style={ {fontSize:"0.75rem"}, {textAlign:"center"}, {fontSize:"1rem"} }>{success}</p>}
+        {success && <p className='txt' style={{ textAlign: "center", fontSize: "1rem" }} >{success}</p>}
         {selTopic ? (
           <div id="detailView">
             <div id="backHeader">
