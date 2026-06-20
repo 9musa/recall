@@ -5,6 +5,8 @@ import Button from "./components/Button";
 import Bar from "./components/Bar";
 import { useMemo, useState, useEffect } from 'react';
 import { supabase } from './supabaseClient';
+import { Network } from '@capacitor/network';
+import { nativeStorage } from './storage';
 
 function App() {
   //authentication methods
@@ -36,6 +38,84 @@ function App() {
   }, [])
   //holds all topic objects, initialised with a template
   const [topics, setTopics] = useState([]);
+  
+  useEffect(() => {
+    const processOfflineQueues = async () => {
+      const status = await Network.getStatus()
+      if(!status.connected || !user) return
+      const rawAdds = await nativeStorage.getItem("offlineAddQueue")
+      const addQueue = JSON.parse(rawAdds || "[]")
+      if (addQueue.length > 0) {
+        console.log(`Processing ${addQueue.length} offline additions...`)
+        let remainingAdds = [...addQueue]
+        for (const item of addQueue) {
+          const {data, error} = await supabase
+          .from("topics")
+          .insert([{ title:item.title, content: item.content, user_id: user.id }])
+          .select()
+          .single()
+          if (!error) {
+            setTopics(prev => prev.map(topic => topic.id === item.id ? data: topic))
+            setSelTopic(current => current && current.id === item.id ? data : current)
+            remainingAdds = remainingAdds.filter(topic => topic.id !== item.id)
+          }
+        }
+        await nativeStorage.setItem("offlineAddQueue", JSON.stringify(remainingAdds))
+      }
+      const rawEdits = await nativeStorage.getItem("offlineEditQueue")
+      const editQueue = JSON.parse(rawEdits || "[]")
+      if (editQueue.length > 0) {
+        console.log(`Processing ${editQueue.length} offline edits...`)
+        let remainingEdits = [...editQueue]
+        for (const item of editQueue) {
+          const rawCurrentAdds = await nativeStorage.getItem("offlineAddQueue")
+          const currentAdds = JSON.parse(rawCurrentAdds || "[]")
+          if (currentAdds.some(topic => topic.id === item.id)) continue
+          const { error } = await supabase
+            .from("topics")
+            .update( {content: item.content, title: item.title} )
+            .eq("id", item.id)
+          if (!error) {
+            remainingEdits = remainingEdits.filter(topic => topic.id !== item.id)
+          }
+        }
+        await nativeStorage.setItem("offlineEditQueue", JSON.stringify(remainingEdits))
+      }
+      const rawDeletes = await nativeStorage.getItem("offlineDeleteQueue")
+      const deleteQueue = JSON.parse(rawDeletes || "[]")
+      if (deleteQueue.length > 0) {
+        console.log(`Processing ${deleteQueue.length} offline deletions...`);
+        let remainingDeletes = [...deleteQueue]
+        for (const topicId of deleteQueue) {
+          if (typeof topicId === "string" && topicId.startsWith("local-")) {
+            remainingDeletes = remainingDeletes.filter(id => id !== topicId)
+            continue
+          }
+          const { error } = await supabase
+            .from("topics")
+            .delete()
+            .eq("id", topicId)
+          if (!error) {
+            remainingDeletes = remainingDeletes.filter(id => id !== topicId)
+          }
+        }
+        await nativeStorage.setItem("offlineDeleteQueue", JSON.stringify(remainingDeletes))
+      }
+    }
+    processOfflineQueues()
+    const networkListener = Network.addListener('networkStatusChange', (status) => {
+      if (status.connected) {
+        console.log("Native hardware reports online connection! Syncing queues...");
+        processOfflineQueues();
+      }
+    })
+    window.addEventListener("online", processOfflineQueues)
+    return () => {
+    window.removeEventListener("online", processOfflineQueues)
+    networkListener.then(listener => listener.remove())
+  }
+  }, [user])
+  
   //data downloader
   useEffect(() => {
     if (!user) {
@@ -44,19 +124,42 @@ function App() {
   }
   const fetchUserTopics = async () => {
     console.log("Fetching live notes for user: ", user.id)
-    const { data, error } = await supabase
-    .from("topics")
-    .select("*")
-    .eq("user_id", user.id)
-    if (error) {
-      console.log("Error loading notes from Supabase: ", error.message)
-    } else if (data) {
-      console.log("Loaded topics from cloud: ", data)
-      setTopics(data)
+    try {
+      const cachedData = await nativeStorage.getItem(`cachedTopics${user.id}`)
+      if (cachedData && typeof cachedData === 'string' && !cachedData.includes("object")) {
+        setTopics(JSON.parse(cachedData))
+      }
+    } catch (e) {
+      console.log("No valid cache found yet.")
+    }
+    const rawAdds = await nativeStorage.getItem("offlineAddQueue")
+    const rawEdits = await nativeStorage.getItem("offlineEditQueue")
+    const rawDeletes = await nativeStorage.getItem("offlineDeleteQueue")
+    const hasUnsyncedData = 
+      JSON.parse(rawAdds || "[]").length > 0 || 
+      JSON.parse(rawEdits || "[]").length > 0 || 
+      JSON.parse(rawDeletes || "[]").length > 0;
+    if (hasUnsyncedData) {
+      console.log("Unsynced queue items detected. Postponing cloud fetch to prevent data overwrites.")
+      return; 
+    }
+    if (navigator.onLine) {
+      const { data, error } = await supabase
+        .from("topics")
+        .select("*")
+        .eq("user_id", user.id)
+      if (error) {
+        console.log("Error loading notes from Supabase: ", error.message)
+      } else if (data) {
+        console.log("Loaded topics from cloud: ", data)
+        setTopics(data)
+        await nativeStorage.setItem(`cachedTopics${user.id}`, JSON.stringify(data))
+      }
     }
   }
+
   fetchUserTopics()
-  }, [user])
+}, [user])
   //initialises state piece "query" to hold search input, and its function setQuery
   const [query, setQuery] = useState("");
   //takes a value as a parameter, and updates it
@@ -108,23 +211,70 @@ function App() {
       alert("You must be logged in to save notes!")
       return
     }
-    const newRow = {title: newTitle, content: "", user_id: user.id}
-    const { data, error } = await supabase
-    .from('topics')
-    .insert([newRow])
-    .select()
-    .single()
-    if (error) {
-      console.error("Error saving note to cloud: ", error.message)
-      alert("Failed to save note.")
-    } else {
-    setTopics(prevTopic => [...prevTopic, data]);
+    const newRow = {id: `local-${Date.now()}`, title: newTitle, content: "", user_id: user.id}
+    setTopics(prevTopic => [...prevTopic, newRow])
     setQuery("")
-    setSelTopic(data)
+    setSelTopic(newRow)
+
+    const queueOfflineAddition = async () => {
+      console.log("Adding topic:", newTitle)
+      console.log("Online:", navigator.onLine)
+      console.log("Queueing note addition locally due to a network connection loss...")
+      const rawQueue = await nativeStorage.getItem("offlineAddQueue")
+      const queue = JSON.parse(rawQueue || "[]")
+      if (!queue.some(item => item.id === newRow.id)) {
+        queue.push(newRow)
+        await nativeStorage.setItem("offlineAddQueue", JSON.stringify(queue))
+      }
     }
+
+    if (!navigator.onLine) {
+      queueOfflineAddition()
+      return
+    }
+  try {
+    const { data, error } = await supabase
+      .from('topics')
+      .insert([{ title: newTitle, content: "", user_id: user.id }])
+      .select()
+      .single()
+
+    if (error) throw error
+
+    setTopics(prev =>
+      prev.map(t => t.id === newRow.id ? data : t)
+    )
+
+    setSelTopic(data)
+
+  } catch (err) {
+    console.error("Network/cloud save failed:", err)
+
+    queueOfflineAddition()
+  }
   }
   const handleRemoveTopic = async () => {
     if (!selTopic || !selTopic.id) return
+    const topicIdToDelete = selTopic.id
+    setTopics(prevTopic => prevTopic.filter(topic => topic.id !== topicIdToDelete))
+    setSelTopic(null)
+    setQuery("")
+
+    if (!navigator.onLine) {
+      console.log("Offline. Queueing note deletion...")
+      const rawAdds = await nativeStorage.getItem("offlineAddQueue")
+      const addQueue = JSON.parse(rawAdds || "[]")
+      if (addQueue.some(a => a.id === topicIdToDelete)) {
+        await nativeStorage.setItem("offlineAddQueue", JSON.stringify(addQueue.filter(a => a.id !== topicIdToDelete)));
+        return
+      }
+      const rawDeletes = await nativeStorage.getItem("offlineDeleteQueue")
+      const deleteQueue = JSON.parse(rawDeletes || "[]");
+      deleteQueue.push(topicIdToDelete);
+      await nativeStorage.setItem("offlineDeleteQueue", JSON.stringify(deleteQueue));
+      return
+    }
+
     const {error} = await supabase
     .from("topics")
     .delete()
@@ -133,9 +283,6 @@ function App() {
       console.log("Error deleting from Supabase: ", error.message)
       return
     }
-    setTopics(prevTopic => prevTopic.filter(topic => topic.title !== selTopic.title))
-    setSelTopic(null)
-    setQuery("")
   }
   //click event handler, sets selected topic, needs onClick attribute
   const handleTopicClick = (topic) => {
@@ -151,34 +298,60 @@ function App() {
   }
   //event object as parameter, updates selected topic by copying its old properties, but replaces content with the updated value
   const handleContentChange = (e) => {
-    setSelTopic({
-      ...selTopic, content: e.target.value,
-    });
+    const updatedContent = e.target.value
+    const updatedTopicObj = {
+    ...selTopic,
+    content: updatedContent
+  };
+  setSelTopic(updatedTopicObj)
+  /* saveTopicChanges(updatedTopicObj); */
   };
   //takes topic object as parameter
   const saveTopicChanges = async (topicToSave) => {
     if (!topicToSave || !topicToSave.id) return
     //find the index of the topic being edited
     const index = topics.findIndex(topic => topic.id === topicToSave.id);
+    let updatedTopics = [...topics]
     if (index !== -1) {
-      const updatedTopics = [...topics]
       updatedTopics[index] = topicToSave
       setTopics(updatedTopics)
     }
-    console.log(`Saving "${ topicToSave.title }" to the cloud...`)
-    const { error } = await supabase
-    .from("topics")
-    .update({
-      content: topicToSave.content,
-      title: topicToSave.title
-    })
-    .eq("id", topicToSave.id)
-    if (error) {
-      console.error("Error backing up to Supabase: ", error.message)
-    } else {
-      console.log("Changes successfully backed up to Supabase!")
+    try {
+      await nativeStorage.setItem(`cachedTopics${user.id}`, JSON.stringify(updatedTopics))
+    } catch (e) {
+      console.error("Failed to update local topic cache:", e)
     }
-}
+    if (!navigator.onLine) {
+      console.log("Offline. Queueing note changes...");
+      const rawAdds = await nativeStorage.getItem("offlineAddQueue")
+      const addQueue = JSON.parse(rawAdds || "[]");
+      const addIndex = addQueue.findIndex(a => a.id === topicToSave.id);
+      if (addIndex !== -1) {
+        addQueue[addIndex] = topicToSave;
+        await nativeStorage.setItem("offlineAddQueue", JSON.stringify(addQueue));
+        return;
+      }
+      const rawEdits = await nativeStorage.getItem("offlineEditQueue")
+      const editQueue = JSON.parse(rawEdits || "[]");
+      const filteredQueue = editQueue.filter(item => item.id !== topicToSave.id);
+      filteredQueue.push(topicToSave);
+      await nativeStorage.setItem("offlineEditQueue", JSON.stringify(filteredQueue));
+      return;
+    }
+    console.log(`Saving "${ topicToSave.title }" to the cloud...`)
+    try {
+    const { error } = await supabase
+      .from("topics")
+      .update({ content: topicToSave.content, title: topicToSave.title })
+      .eq("id", topicToSave.id);
+
+    if (error) {
+      console.error("Cloud push failed, fallback routing active:", error.message);
+    }
+  } catch (err) {
+    console.warn("Network timeout hit during typing event loop.", err);
+  }
+};
   //TROUBLESHOOTING
   //console.log(topics);
   //topics.forEach((t, i) => console.log(i, typeof t, t));
