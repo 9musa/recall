@@ -9,7 +9,9 @@ const config: CapacitorConfig = {
       launchShowDuration: 2500,
       launchAutoHide: true,
       backgroundColor: "#fae3e3",
-      androidScaleType: "CENTER"
+      androidSplashResourceName: "splash",
+      androidScaleType: "CENTER_CROP",
+      useDialog: false
     }
   }
 };
