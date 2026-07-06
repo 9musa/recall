@@ -122,39 +122,50 @@ function App() {
     setTopics([])
     return
   }
+  const getNativeValue = async (key, fallback = null) => {
+    const raw = await nativeStorage.getItem(key)
+    console.log("Raw from storage:", raw)
+    if (!raw) return fallback
+    const str = (raw && typeof raw === 'object' && 'value' in raw) ? raw.value : raw
+    try {
+      return JSON.parse(str)
+    } catch {
+      return fallback
+    }
+  }
   const fetchUserTopics = async () => {
     console.log("Fetching live notes for user: ", user.id)
     try {
-      const cachedData = await nativeStorage.getItem(`cachedTopics${user.id}`)
-      if (cachedData && typeof cachedData === 'string' && !cachedData.includes("object")) {
-        setTopics(JSON.parse(cachedData))
+      const cachedData = await getNativeValue(`cachedTopics${user.id}`)
+      console.log("1. Raw Cache retrieved:", cachedData)  
+      if (Array.isArray(cachedData)) {
+        setTopics(cachedData)
+        console.log("Loaded from cache:", cachedData.length, "topics")
       }
-    } catch (e) {
-      console.log("No valid cache found yet.")
-    }
-    const rawAdds = await nativeStorage.getItem("offlineAddQueue")
-    const rawEdits = await nativeStorage.getItem("offlineEditQueue")
-    const rawDeletes = await nativeStorage.getItem("offlineDeleteQueue")
-    const hasUnsyncedData = 
-      JSON.parse(rawAdds || "[]").length > 0 || 
-      JSON.parse(rawEdits || "[]").length > 0 || 
-      JSON.parse(rawDeletes || "[]").length > 0;
-    if (hasUnsyncedData) {
-      console.log("Unsynced queue items detected. Postponing cloud fetch to prevent data overwrites.")
-      return; 
-    }
-    if (navigator.onLine) {
+      const status = await Network.getStatus()
+      if (!status.connected) {
+        console.log("Offline — serving cache only.")
+        return
+      }
+      const addQueue    = await getNativeValue("offlineAddQueue", [])
+      const editQueue   = await getNativeValue("offlineEditQueue", [])
+      const deleteQueue = await getNativeValue("offlineDeleteQueue", [])
+      if (addQueue.length || editQueue.length || deleteQueue.length) {
+        console.log("Unsynced queue detected — skipping cloud fetch.")
+        return
+      }
       const { data, error } = await supabase
         .from("topics")
         .select("*")
         .eq("user_id", user.id)
       if (error) {
-        console.log("Error loading notes from Supabase: ", error.message)
+      console.error("Supabase error:", error.message)
       } else if (data) {
-        console.log("Loaded topics from cloud: ", data)
         setTopics(data)
         await nativeStorage.setItem(`cachedTopics${user.id}`, JSON.stringify(data))
       }
+    } catch (e) {
+      console.log("Failed somewhere during cache unpacking:", e)
     }
   }
 
@@ -420,6 +431,9 @@ function App() {
           </div>
         </>
         )}
+        <footer>
+          <p>© 2026 Verelous Labs</p>
+        </footer>
       </div>
     );
     }

@@ -46,12 +46,19 @@ export default function Login( {error, setError, setSuccess, clearNotifications}
         setLoading(false)
     }
     return(
-        <form onSubmit={handleContinue}>
-            <h1 style={ { fontFamily: "GreatVibes", textAlign: "center" } }>Welcome to Recall</h1>
-            <input className="input" type="email" value={email} onChange={(e) => setEmail(e.target.value)} placeholder="email" required/>
-            <input className="input" type="password" value={pass} onChange={(e) => setPass(e.target.value)} placeholder="password" required/>
-            <button className="btn" style={{ width: '100%' }} type="submit" disabled={loading}>{loading ? "Connecting..." : "Continue"}</button>
-            {error && <p className='txt' style={ {fontSize:"0.75rem"} }>{error}</p>}
-        </form>
+        <div className='page' style={ {minHeight: "90vh", display: 'flex', flexDirection: 'column', boxSizing: 'border-box' } }>
+            <main style={ {flex: 1} }>
+                <form onSubmit={handleContinue}>
+                    <h1 style={ { fontFamily: "GreatVibes", textAlign: "center" } }>Welcome to Recall</h1>
+                    <input className="input" type="email" value={email} onChange={(e) => setEmail(e.target.value)} placeholder="email" required/>
+                    <input className="input" type="password" value={pass} onChange={(e) => setPass(e.target.value)} placeholder="password" required/>
+                    <button className="btn" style={{ width: '100%' }} type="submit" disabled={loading}>{loading ? "Connecting..." : "Continue"}</button>
+                    {error && <p className='txt' style={ {fontSize:"0.75rem"} }>{error}</p>}
+                </form>
+            </main>
+            <footer>
+                <p>© 2026 Verelous Labs</p>
+            </footer>
+        </div>
     )
 }
