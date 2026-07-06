@@ -2,8 +2,6 @@
 
 This project was built using Create React App and extended into a full-stack application using Supabase for authentication and database functionality.
 
-> **Live Demo:** [https://recall-rose.vercel.app/](https://recall-rose.vercel.app/)
-
 Recall is a minimal, search-first note-taking application designed for capturing thoughts, insights, and niche information the moment they appear—especially in situations where ideas are easily lost while browsing or consuming content.
 
 ## The Idea
