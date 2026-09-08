@@ -1,6 +1,6 @@
 # Recall
 
-![React](https://img.shields.io/badge/React-18-61DAFB?logo=react&logoColor=white)
+![React](https://img.shields.io/badge/React-19-61DAFB?logo=react&logoColor=white)
 ![License](https://img.shields.io/badge/license-MIT-blue)
 
 Recall was built using Create React App and extended into a full-stack application using Supabase for authentication and database functionality.
@@ -40,6 +40,9 @@ Notes aren't meant to be "finished" either. The idea is you come back to them, a
 - **Frontend:** React
 - **Styling:** CSS3
 - **Auth & Database:** Supabase
+
+## Known limitations
+Offline functionality relies on a Supabase auth token that expires after ~1 hour of inactivity. If this happens, a manual refresh/reopen is currently required to restore sync. Fix planned for a future release.
 
 ## Author
 Built by [9musa](https://github.com/9musa), under Verelous Labs.
